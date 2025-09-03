@@ -68,7 +68,7 @@ export default function NeuralNetworkPage() {
     // console.log('Success:', values);
     const data = { ...values, image: imagePath };
     // console.log(data);
-    // sendPrompt(wfId, data?.prompt, data?.image)
+    // sendPrompt(wf_id, data?.prompt, data?.image)
     sendPrompt(wfId, data)
       .then(result => {
         console.log("result", result.job_id);
@@ -79,7 +79,7 @@ export default function NeuralNetworkPage() {
           })
       })
       .catch(error => console.log(error));
-    // getConfiguration(values.token, values.wfId)
+    // getConfiguration(values.token, values.wf_id)
     //   .then(result => {
     //     console.log("result", result);
     //   });
@@ -102,21 +102,9 @@ export default function NeuralNetworkPage() {
           </Button>
         </Form.Item>
       </Form>
-      {/*<Image*/}
-      {/*  width={500}*/}
-      {/*  height={500}*/}
-      {/*  src={`${process.env.NEXT_PUBLIC_API_URL}output/video.mp4`}*/}
-      {/*  alt=""*/}
-      {/*/>*/}
       {resultImage && (
         <div className="">
           <img src={`${process.env.NEXT_PUBLIC_API_URL}${resultImage.replaceAll("\\", "/")}`} alt="" />
-          {/*<Image*/}
-          {/*  width={500}*/}
-          {/*  height={500}*/}
-          {/*  src={`${process.env.NEXT_PUBLIC_API_URL}${resultImage.replaceAll("\\", "/")}`}*/}
-          {/*  alt=""*/}
-          {/*/>*/}
         </div>
       )}
     </div>

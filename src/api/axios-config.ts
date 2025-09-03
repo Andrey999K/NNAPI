@@ -51,7 +51,7 @@ export const fetchData = async (
 
     // Формируем заголовки
     const headers: Record<string, string> = {};
-    if (auth && currentToken) headers.Authorization = `bearer ${currentToken}`;
+    if (auth) headers.Authorization = `bearer ${currentToken}`;
 
     // Выполняем запрос
     const response = await axiosInstance({

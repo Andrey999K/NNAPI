@@ -1,22 +1,30 @@
 "use client"
 
-import { Button, Form, FormProps, Input } from "antd";
-import { getConfiguration } from "@/utils/api";
+import { Button, Form, FormProps, Input, Select } from "antd";
+import { getConfiguration, getWorkflowsWithoutToken, getWorkflowsWithToken } from "@/utils/api";
 import { useRouter } from "next/navigation";
 import { FieldType } from "@/utils/types";
 import { onFinishFailed } from "@/utils/function";
+import { ChangeEvent, useEffect, useState } from "react";
+import { log } from "node:util";
+
+const { Option } = Select;
 
 export default function Home() {
+  const [workflows, setWorkflows] = useState([]);
+  const [form] = Form.useForm();
 
   const router = useRouter();
 
   const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
     console.log('Success:', values);
-    getConfiguration(values.token, values.wfId)
+    getConfiguration(values.token, values.wf_id)
       .then(result => {
         console.log("result", JSON.stringify(result.template));
-        localStorage.setItem("authToken", values.token);
-        router.push(`/neural_network?wf_id=${values.wfId}&fields=${JSON.stringify(result.template)}`);
+        if (values.token) {
+          localStorage.setItem("authToken", values.token);
+        }
+        router.push(`/neural_network?wf_id=${values.wf_id}&fields=${JSON.stringify(result.template)}`);
         // 'image', 'prompt'
       });
   };
@@ -24,38 +32,92 @@ export default function Home() {
   //   getConfiguration
   // }
 
+  // const onGenderChange = (value: string) => {
+  //   switch (value) {
+  //     case 'male':
+  //       form.setFieldsValue({ note: 'Hi, man!' });
+  //       break;
+  //     case 'female':
+  //       form.setFieldsValue({ note: 'Hi, lady!' });
+  //       break;
+  //     case 'other':
+  //       form.setFieldsValue({ note: 'Hi there!' });
+  //       break;
+  //     default:
+  //   }
+  // };
+
+  const handleBlur = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value) {
+      const token = e.target.value;
+      console.log(token);
+      getWorkflowsWithToken(token)
+        .then(r => setWorkflows(r.workflows));
+    }
+  };
+
+  useEffect(() => {
+    getWorkflowsWithoutToken()
+      .then(r => setWorkflows(r.workflows))
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      form.setFieldsValue({ token, wfId: "" })
+    }
+  }, []);
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-2 row-start-2 items-center sm:items-start h-full">
+    <div className="font-sans items-center justify-items-center p-8 pb-20 gap-16 sm:p-20">
+      <main className="w-full flex flex-col gap-2 row-start-2 items-center h-full justify-center">
         {/*<div className="flex items-center gap-2">*/}
         {/*  <Input placeholder="Token" />*/}
         {/*  <Input placeholder="Workflow ID" />*/}
         {/*  <Button type="primary">Send</Button>*/}
         {/*</div>*/}
+
         <Form
           name="basic"
+          form={form}
           initialValues={{ remember: true }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
-          className="flex gap-2 items-center justify-center"
+          className="w-full max-w-[400px] flex gap-2 items-center justify-center m-auto justify-center"
         >
           <Form.Item<FieldType>
             name="token"
-            rules={[{ required: true, message: 'Please input your token!' }]}
+            rules={[{ message: 'Please input your token!' }]}
+            className="w-full"
           >
-            <Input placeholder="Token" />
+            <Input.Password placeholder="Token" onBlur={handleBlur} />
           </Form.Item>
 
-          <Form.Item<FieldType>
-            name="wfId"
+          {/*<Form.Item<FieldType>*/}
+          {/*  name="wf_id"*/}
+          {/*  rules={[{ required: true, message: 'Please input wf_id!' }]}*/}
+          {/*>*/}
+          {/*  <Input placeholder="Workflow ID" />*/}
+          {/*</Form.Item>*/}
+
+          <Form.Item
+            name="wf_id"
             rules={[{ required: true, message: 'Please input wf_id!' }]}
+            className="w-full"
           >
-            <Input placeholder="Workflow ID" />
+            <Select
+              placeholder="Workflow id"
+              allowClear
+            >
+              {workflows.map((workflow) => (
+                <Option key={workflow} value={workflow}>{workflow}</Option>
+              ))}
+            </Select>
           </Form.Item>
 
-          <Form.Item label={null}>
-            <Button type="primary" htmlType="submit">
+          <Form.Item label={null} className="w-full">
+            <Button type="primary" htmlType="submit" className="w-full">
               Submit
             </Button>
           </Form.Item>

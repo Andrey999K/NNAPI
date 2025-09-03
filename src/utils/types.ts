@@ -1,4 +1,4 @@
 export type FieldType = {
   token: string;
-  wfId: string;
+  wf_id: string;
 };

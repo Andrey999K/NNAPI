@@ -2,8 +2,8 @@ import { fetchData } from "@/api/axios-config";
 
 
 export const getConfiguration = async (token: string, wfId: string) => {
-  // const wfId = "big_head";
-  // const wfId = "bg_remove";
+  // const wf_id = "big_head";
+  // const wf_id = "bg_remove";
   return await fetchData(
     `/get_workflow?wf_id=${wfId}`,
     "GET",
@@ -85,11 +85,33 @@ export const getJobInfo = async (jobId: string) => {
 };
 
 
+export const getWorkflowsWithoutToken = async () => {
+  return await fetchData(
+    `/get_workflows`,
+    "GET",
+    {},
+    true,
+    ""
+  );
+};
+
+
+export const getWorkflowsWithToken = async (token: string) => {
+  return await fetchData(
+    `/get_workflows`,
+    "GET",
+    {},
+    true,
+    token
+  );
+};
+
+
 // export const getConfiguration = async (token: string): Promise<ConfigurationData> => {
-//   // const wfId = "big_head";
-//   const wfId = "bg_remove";
+//   // const wf_id = "big_head";
+//   const wf_id = "bg_remove";
 //   const response = await customFetch(
-//     `/get_workflow?wf_id=${wfId}`,
+//     `/get_workflow?wf_id=${wf_id}`,
 //     "GET",
 //     {},
 //     true,
