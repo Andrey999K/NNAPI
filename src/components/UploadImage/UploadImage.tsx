@@ -102,7 +102,7 @@ export const UploadImage = ({ setImagePath }: UploadImageProps) => {
 
         {formData.preview && (
           <div className="mb-4 relative mt-2">
-            <div className="relative h-48 w-full border rounded-md overflow-hidden">
+            <div className="relative h-[800px] w-full border rounded-md overflow-hidden">
               <Image
                 src={formData.preview}
                 alt="Предпросмотр"
