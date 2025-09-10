@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { FieldType } from "@/utils/types";
 import { onFinishFailed } from "@/utils/function";
 import { ChangeEvent, useEffect, useState } from "react";
-import { log } from "node:util";
 
 const { Option } = Select;
 

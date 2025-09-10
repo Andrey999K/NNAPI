@@ -1,4 +1,6 @@
 import { fetchData } from "@/api/axios-config";
+import { Dispatch, SetStateAction } from "react";
+import { LoadingType } from "@/utils/types";
 
 
 export const getConfiguration = async (token: string, wfId: string) => {
@@ -50,7 +52,7 @@ export const sendPrompt = async (wf_id: string, args: Record<string, string>) =>
 //   }
 // }
 
-export const getJobInfo = async (jobId: string) => {
+export const getJobInfo = async (jobId: string, setLoading: Dispatch<SetStateAction<LoadingType | undefined>>) => {
   const token = localStorage.getItem('authToken');
   if (!token) return;
 
@@ -64,6 +66,8 @@ export const getJobInfo = async (jobId: string) => {
         true,
         token
       );
+
+      setLoading(response.job);
 
       if (response.job.status === "success") {
         return response.job.result; // Завершаем при успехе
