@@ -24,27 +24,8 @@ export default function Home() {
           localStorage.setItem("authToken", values.token);
         }
         router.push(`/neural_network?wf_id=${values.wf_id}&fields=${JSON.stringify(result.template)}`);
-        // 'image', 'prompt'
       });
   };
-  // const handleSend = () => {
-  //   getConfiguration
-  // }
-
-  // const onGenderChange = (value: string) => {
-  //   switch (value) {
-  //     case 'male':
-  //       form.setFieldsValue({ note: 'Hi, man!' });
-  //       break;
-  //     case 'female':
-  //       form.setFieldsValue({ note: 'Hi, lady!' });
-  //       break;
-  //     case 'other':
-  //       form.setFieldsValue({ note: 'Hi there!' });
-  //       break;
-  //     default:
-  //   }
-  // };
 
   const handleBlur = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.value) {
@@ -54,6 +35,9 @@ export default function Home() {
         .then(r => setWorkflows(r.workflows));
     }
   };
+
+  console.log("!workflows", !workflows)
+  console.log("!!workflows", !!workflows)
 
   useEffect(() => {
     getWorkflowsWithoutToken()
@@ -70,11 +54,6 @@ export default function Home() {
   return (
     <div className="font-sans items-center justify-items-center p-8 pb-20 gap-16 sm:p-20">
       <main className="w-full flex flex-col gap-2 row-start-2 items-center h-full justify-center">
-        {/*<div className="flex items-center gap-2">*/}
-        {/*  <Input placeholder="Token" />*/}
-        {/*  <Input placeholder="Workflow ID" />*/}
-        {/*  <Button type="primary">Send</Button>*/}
-        {/*</div>*/}
 
         <Form
           name="basic"
@@ -93,13 +72,6 @@ export default function Home() {
             <Input.Password placeholder="Token" onBlur={handleBlur} />
           </Form.Item>
 
-          {/*<Form.Item<FieldType>*/}
-          {/*  name="wf_id"*/}
-          {/*  rules={[{ required: true, message: 'Please input wf_id!' }]}*/}
-          {/*>*/}
-          {/*  <Input placeholder="Workflow ID" />*/}
-          {/*</Form.Item>*/}
-
           <Form.Item
             name="wf_id"
             rules={[{ required: true, message: 'Please input wf_id!' }]}
@@ -108,6 +80,7 @@ export default function Home() {
             <Select
               placeholder="Workflow id"
               allowClear
+              loading={!workflows.length}
             >
               {workflows.map((workflow) => (
                 <Option key={workflow} value={workflow}>{workflow}</Option>
