@@ -85,31 +85,6 @@ export default function NeuralNetworkPage() {
 
   return (
     <div className="py-20">
-      {/*{loading && (*/}
-      {/*  <Modal*/}
-      {/*    centered*/}
-      {/*    open={loading}*/}
-      {/*    // onOk={() => setLoading(false)}*/}
-      {/*    // onCancel={() => setLoading(false)}*/}
-      {/*    cancelButtonProps={{hidden: true}}*/}
-      {/*    okButtonProps={{hidden: true}}*/}
-      {/*    closable={false}*/}
-      {/*    maskClosable={false}*/}
-      {/*    footer={null}*/}
-      {/*    className="w-full max-w-[400px] mx-auto"*/}
-      {/*  >*/}
-      {/*    <div className="w-full flex items-center justify-between gap-5 h-[100px]">*/}
-      {/*      <Spin indicator={<LoadingOutlined style={{fontSize: 48}} spin />} />*/}
-      {/*      <div className="text-xl w-full max-w-26 text-center">Node 178</div>*/}
-      {/*      <Progress*/}
-      {/*        percent={100}*/}
-      {/*        status="active"*/}
-      {/*        percentPosition={{align: 'center', type: 'inner'}}*/}
-      {/*        size={[NaN, 20]}*/}
-      {/*      />*/}
-      {/*    </div>*/}
-      {/*  </Modal>*/}
-      {/*)}*/}
       <Form
         name="basic"
         initialValues={{remember: true}}
