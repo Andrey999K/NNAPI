@@ -53,15 +53,10 @@ export default function NeuralNetworkPage() {
         return <UploadImage key={field} setImagePath={setImagePath} />;
       }
     })
-  }
-
-  console.log("resultImage", resultImage)
+  };
 
   const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
-    // console.log('Success:', values);
     const data = { ...values, image: imagePath };
-    // console.log(data);
-    // sendPrompt(wf_id, data?.prompt, data?.image)
     setResultImage(null);
     setLoading({
       result: null,
@@ -77,10 +72,6 @@ export default function NeuralNetworkPage() {
           });
       })
       .catch(error => console.log(error));
-    // getConfiguration(values.token, values.wf_id)
-    //   .then(result => {
-    //     console.log("result", result);
-    //   });
   };
 
   return (

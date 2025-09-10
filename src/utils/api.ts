@@ -18,43 +18,25 @@ export const getConfiguration = async (token: string, wfId: string) => {
 
 export const sendPrompt = async (wf_id: string, args: Record<string, string>) => {
   const token = localStorage.getItem('authToken');
-  console.log("args", args);
-  if (token) {
-    let fields = "";
-    for (const arg in args) {
-      fields += `&${arg}=${args[arg]}`;
-    }
-    return await fetchData(
-      `/start_run?workflow_id=${wf_id}${fields}`,
-      "POST",
-      {},
-      true,
-      token
-    );
+  console.log("sendPrompt", sendPrompt);
+  let fields = "";
+  for (const arg in args) {
+    fields += `&${arg}=${args[arg]}`;
   }
-}
 
-// export const getJobInfo = async (jobId: string) => {
-//   const token = localStorage.getItem('authToken');
-//   if (token) {
-//     const timer = setInterval(async () => {
-//       const response = await fetchData(
-//         `/job_info?job_id=${jobId}`,
-//         "GET",
-//         {},
-//         true,
-//         token
-//       );
-//       if (response.job.status === "success") {
-//         clearInterval(timer);
-//       }
-//     }, 1000);
-//   }
-// }
+  return await fetchData(
+    `/start_run?workflow_id=${wf_id}${fields}`,
+    "POST",
+    {},
+    true,
+    token || ""
+  );
+
+};
 
 export const getJobInfo = async (jobId: string, setLoading: Dispatch<SetStateAction<LoadingType | undefined>>) => {
   const token = localStorage.getItem('authToken');
-  if (!token) return;
+  // if (!token) return;
 
   const checkJobStatus = async (): Promise<void> => {
 
@@ -64,7 +46,7 @@ export const getJobInfo = async (jobId: string, setLoading: Dispatch<SetStateAct
         "GET",
         {},
         true,
-        token
+        token || ""
       );
 
       setLoading(response.job);
