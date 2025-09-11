@@ -1,13 +1,12 @@
 "use client"
 
 import { useSearchParams } from "next/navigation";
-import { Button, Form, FormProps, Progress, Spin } from "antd";
+import { Button, Form, FormProps, Progress } from "antd";
 import { UploadImage } from "@/components/UploadImage";
 import { onFinishFailed } from "@/utils/function";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TextArea from "antd/es/input/TextArea";
 import { getJobInfo, sendPrompt } from "@/utils/api";
-import { LoadingOutlined } from "@ant-design/icons";
 import { LoadingType } from "@/utils/types";
 import { TimeElapsed } from "@/components/TimeElapsed";
 import { Wrapper } from "@/components/Wrapper";
@@ -23,6 +22,7 @@ export default function NeuralNetworkPage() {
   const [imagePath, setImagePath] = useState("");
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [loading, setLoading] = useState<undefined | LoadingType>(undefined);
+  const notificationAudio = useRef<HTMLAudioElement | null>(null);
 
   const blockFields = !resultImage && !!loading;
 
@@ -65,10 +65,11 @@ export default function NeuralNetworkPage() {
     });
     sendPrompt(wfId, data)
       .then(result => {
-        console.log("result", result.job_id);
         getJobInfo(result.job_id, setLoading)
           .then((res) => {
-            console.log("res", res);
+            if (notificationAudio.current) {
+              notificationAudio.current.play();
+            }
             setResultImage(res);
           });
       })
@@ -121,12 +122,16 @@ export default function NeuralNetworkPage() {
             </div>
           </div>
         )}
-        {resultImage && (
+        <audio src="/ding-36029.mp3" ref={notificationAudio}></audio>
+      {resultImage && (
+        <>
           <div className="flex w-full justify-center mt-20">
             <img src={`${process.env.NEXT_PUBLIC_API_URL}${resultImage.replaceAll("\\", "/")}`} alt="" />
           </div>
-        )}
-      </div>
-    </Wrapper>
-  );
+        </>
+      )}
+    </div>
+</Wrapper>
+)
+  ;
 };
