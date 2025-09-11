@@ -6,19 +6,24 @@ import { useRouter } from "next/navigation";
 import { FieldType } from "@/utils/types";
 import { onFinishFailed } from "@/utils/function";
 import { ChangeEvent, useEffect, useState } from "react";
+import { Loader } from "@/components/Loader";
+import { PageLoader } from "@/components/PageLoader";
 
 const { Option } = Select;
 
 export default function Home() {
   const [workflows, setWorkflows] = useState([]);
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
 
   const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
     console.log('Success:', values);
+    setLoading(true);
     getConfiguration(values.token, values.wf_id)
       .then(result => {
+        setLoading(false);
         console.log("result", JSON.stringify(result.template));
         if (values.token) {
           localStorage.setItem("authToken", values.token);
@@ -54,7 +59,7 @@ export default function Home() {
   return (
     <div className="font-sans items-center justify-items-center p-8 pb-20 gap-16 sm:p-20">
       <main className="w-full flex flex-col gap-2 row-start-2 items-center h-full justify-center">
-
+        {loading && <PageLoader />}
         <Form
           name="basic"
           form={form}
