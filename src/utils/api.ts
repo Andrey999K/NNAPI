@@ -18,7 +18,6 @@ export const getConfiguration = async (token: string, wfId: string) => {
 
 export const sendPrompt = async (wf_id: string, args: Record<string, string>) => {
   const token = localStorage.getItem('authToken');
-  console.log("sendPrompt", sendPrompt);
   let fields = "";
   for (const arg in args) {
     fields += `&${arg}=${args[arg]}`;
@@ -34,11 +33,13 @@ export const sendPrompt = async (wf_id: string, args: Record<string, string>) =>
 
 };
 
-export const getJobInfo = async (jobId: string, setLoading: Dispatch<SetStateAction<LoadingType | undefined>>) => {
+// Тут тоже изменить тип промиса т.к. там вроде вернётся не строка
+export const getJobInfo = async (jobId: string, setLoading: Dispatch<SetStateAction<LoadingType | undefined>>): Promise<string> => {
   const token = localStorage.getItem('authToken');
   // if (!token) return;
 
-  const checkJobStatus = async (): Promise<void> => {
+  // Изменить тип промиса т.к. там вроде вернётся не строка
+  const checkJobStatus = async (): Promise<string> => {
 
     try {
       const response = await fetchData(
@@ -65,9 +66,7 @@ export const getJobInfo = async (jobId: string, setLoading: Dispatch<SetStateAct
   };
 
   // Запускаем процесс
-  const result = await checkJobStatus();
-  console.log("result1", result);
-  return result;
+  return await checkJobStatus();
 };
 
 
