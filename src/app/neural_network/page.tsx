@@ -11,6 +11,7 @@ import { LoadingOutlined } from "@ant-design/icons";
 import { LoadingType } from "@/utils/types";
 import { TimeElapsed } from "@/components/TimeElapsed";
 import { Wrapper } from "@/components/Wrapper";
+import { Loader } from "@/components/Loader";
 
 type FieldType = {
   prompt?: string;
@@ -50,7 +51,7 @@ export default function NeuralNetworkPage() {
         );
       }
       if (field === "image") {
-        return <UploadImage key={field} setImagePath={setImagePath} />;
+        return <UploadImage key={field} setImagePath={setImagePath} disabled={blockFields} />;
       }
     })
   };
@@ -99,7 +100,7 @@ export default function NeuralNetworkPage() {
               className="flex items-center justify-center gap-5 h-[140px] border-solid
             border-gray-300 border-[1px] rounded-md p-5"
             >
-              <Spin indicator={<LoadingOutlined style={{fontSize: 48}} spin />} />
+              <Loader />
               {
                 loading?.node && (
                   <>

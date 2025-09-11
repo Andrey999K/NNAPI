@@ -9,9 +9,10 @@ type FormData = {
 
 type UploadImageProps = {
   setImagePath: (url: string) => void;
+  disabled?: boolean;
 }
 
-export const UploadImage = ({ setImagePath }: UploadImageProps) => {
+export const UploadImage = ({ setImagePath, disabled }: UploadImageProps) => {
   const [formData, setFormData] = useState<FormData>({
     image: null,
     preview: null,
@@ -96,7 +97,7 @@ export const UploadImage = ({ setImagePath }: UploadImageProps) => {
             onChange={handleImageChange}
             accept="image/*"
             className="w-full px-3 py-2 border rounded-md"
-            disabled={isUploading}
+            disabled={isUploading || disabled}
           />
         </div>
 
