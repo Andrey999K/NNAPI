@@ -1,10 +1,10 @@
 "use client"
 
 import { useSearchParams } from "next/navigation";
-import { Button, Form, FormProps, Progress } from "antd";
+import { Button, Form, FormProps, message, Progress } from "antd";
 import { UploadImage } from "@/components/UploadImage";
 import { onFinishFailed } from "@/utils/function";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import TextArea from "antd/es/input/TextArea";
 import { getJobInfo, sendPrompt } from "@/utils/api";
 import { LoadingType } from "@/utils/types";
@@ -32,8 +32,7 @@ export default function NeuralNetworkPage() {
   let fields: string | string[] = (searchParams.get('fields') || "[]").replaceAll("'", "\"");
   try {
     fields = JSON.parse(fields);
-  }
-  catch(error) {
+  } catch (error) {
     console.log(error);
   }
 
@@ -44,7 +43,7 @@ export default function NeuralNetworkPage() {
           <Form.Item
             name={field}
             key={field}
-            rules={[{ required: true, message: `Please input ${field}!` }]}
+            rules={[{required: true, message: `Please input ${field}!`}]}
           >
             <TextArea placeholder={field} rows={8} disabled={blockFields} />
           </Form.Item>
@@ -57,7 +56,7 @@ export default function NeuralNetworkPage() {
   };
 
   const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
-    const data = { ...values, image: imagePath };
+    const data = {...values, image: imagePath};
     setResultImage(null);
     setLoading({
       result: null,
@@ -67,14 +66,45 @@ export default function NeuralNetworkPage() {
       .then(result => {
         getJobInfo(result.job_id, setLoading)
           .then((res) => {
-            if (notificationAudio.current) {
-              notificationAudio.current.play();
+            const audioElem = notificationAudio.current;
+            if (audioElem) {
+              audioElem.volume = 0.2;
+              audioElem.play();
             }
             setResultImage(res);
           });
       })
       .catch(error => console.log(error));
   };
+
+  const downloadImage = async () => {
+    if (!resultUrl) return;
+
+    try {
+      const response = await fetch(resultUrl);
+      const blob = await response.blob();
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'result.jpg';
+      document.body.appendChild(link);
+      link.click();
+
+      // Очистка
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+
+      message.success('Image downloaded successfully');
+    } catch (error) {
+      console.error('Download error:', error);
+      message.error('Failed to download image');
+    }
+  };
+
+  const resultUrl = resultImage
+    ? `${process.env.NEXT_PUBLIC_API_URL}${resultImage.replaceAll("\\", "/")}`
+    : "";
 
   return (
     <Wrapper>
@@ -123,15 +153,17 @@ export default function NeuralNetworkPage() {
           </div>
         )}
         <audio src="/ding-36029.mp3" ref={notificationAudio}></audio>
-      {resultImage && (
-        <>
-          <div className="flex w-full justify-center mt-20">
-            <img src={`${process.env.NEXT_PUBLIC_API_URL}${resultImage.replaceAll("\\", "/")}`} alt="" />
+        {resultImage && (
+          <div className="flex w-full justify-center items-center mt-20 flex-col">
+            <a href={resultUrl} target="_blank">
+              <img src={resultUrl} alt="" />
+            </a>
+            <Button type="primary" onClick={downloadImage}>
+              Download
+            </Button>
           </div>
-        </>
-      )}
-    </div>
-</Wrapper>
-)
-  ;
+        )}
+      </div>
+    </Wrapper>
+  );
 };
