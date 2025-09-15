@@ -1,16 +1,18 @@
 "use client"
 
 import { useSearchParams } from "next/navigation";
-import { Button, Form, FormProps, message, Progress } from "antd";
+import { Button, Form, FormProps, notification, Progress } from "antd";
 import { UploadImage } from "@/components/UploadImage";
 import { onFinishFailed } from "@/utils/function";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TextArea from "antd/es/input/TextArea";
 import { getJobInfo, sendPrompt } from "@/utils/api";
 import { LoadingType } from "@/utils/types";
 import { TimeElapsed } from "@/components/TimeElapsed";
 import { Wrapper } from "@/components/Wrapper";
 import { Loader } from "@/components/Loader";
+import { History } from "@/components/History";
+import { Result } from "@/components/Result/Result";
 
 type FieldType = {
   prompt?: string;
@@ -23,13 +25,34 @@ export default function NeuralNetworkPage() {
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [loading, setLoading] = useState<undefined | LoadingType>(undefined);
   const notificationAudio = useRef<HTMLAudioElement | null>(null);
+  const [history, setHistory] = useState<string[]>([]);
+
+  const [notificationApi, notificationContextHolder] = notification.useNotification();
 
   const blockFields = !resultImage && !!loading;
 
   const wfId = searchParams.get('wf_id');
+
+  useEffect(() => {
+    if (loading?.status === "failed") {
+      notificationApi.error({message: "Workflow failed"});
+    }
+  }, [loading, notificationApi]);
+
+  useEffect(() => {
+    console.log(history);
+    if (history.length) {
+      localStorage.setItem("history", JSON.stringify(history));
+    }
+  }, [history]);
+
+  useEffect(() => {
+    setHistory(JSON.parse(localStorage.getItem("history") || "[]"));
+  }, []);
+
   if (!wfId) return "А WF_ID где???????????";
 
-  let fields: string | string[] = (searchParams.get('fields') || "[]").replaceAll("'", "\"");
+  let fields: string | string[] = localStorage.getItem("fields") || "[]";
   try {
     fields = JSON.parse(fields);
   } catch (error) {
@@ -72,98 +95,74 @@ export default function NeuralNetworkPage() {
               audioElem.play();
             }
             setResultImage(res);
+            setHistory((prevState) => [...prevState, res]);
           });
       })
-      .catch(error => console.log(error));
+      .catch(error => {
+        console.log(error);
+        notificationApi.error({message: 'Ошибка при отправке запроса'});
+      });
   };
-
-  const downloadImage = async () => {
-    if (!resultUrl) return;
-
-    try {
-      const response = await fetch(resultUrl);
-      const blob = await response.blob();
-
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'result.jpg';
-      document.body.appendChild(link);
-      link.click();
-
-      // Очистка
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(link);
-
-      message.success('Image downloaded successfully');
-    } catch (error) {
-      console.error('Download error:', error);
-      message.error('Failed to download image');
-    }
-  };
-
-  const resultUrl = resultImage
-    ? `${process.env.NEXT_PUBLIC_API_URL}${resultImage.replaceAll("\\", "/")}`
-    : "";
 
   return (
-    <Wrapper>
-      <div className="py-20">
-        <Form
-          name="basic"
-          initialValues={{remember: true}}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
-          autoComplete="off"
-          className="flex flex-col gap-2 justify-center max-w-[440px] !mx-auto"
-        >
-          {renderFields(fields as string[])}
-          <Form.Item label={null} className="!mb-0">
-            <Button type="primary" htmlType="submit" disabled={blockFields}>
-              Submit
-            </Button>
-          </Form.Item>
-        </Form>
-        {!resultImage && loading && loading.status !== "success" && (
-          <div className="mt-10 w-full max-w-[440px] mx-auto">
-            <TimeElapsed />
-            <div
-              className="flex items-center justify-center gap-5 h-[140px] border-solid
+    <>
+      {notificationContextHolder}
+      <Wrapper>
+        <div className="py-20">
+          <Form
+            name="basic"
+            initialValues={{remember: true}}
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
+            autoComplete="off"
+            className="flex flex-col gap-2 justify-center max-w-[440px] !mx-auto"
+          >
+            {renderFields(fields as string[])}
+            <Form.Item label={null} className="!mb-0">
+              <Button type="primary" htmlType="submit" disabled={blockFields}>
+                Submit
+              </Button>
+            </Form.Item>
+          </Form>
+          {!resultImage && loading && loading.status !== "success" && (
+            <div className="mt-10 w-full max-w-[440px] mx-auto">
+              <TimeElapsed />
+              <div
+                className="flex items-center justify-center gap-5 h-[140px] border-solid
             border-gray-300 border-[1px] rounded-md p-5"
-            >
-              <Loader />
-              {
-                loading?.node && (
-                  <>
-                    <div className="text-xl w-full max-w-26 text-center">Node {loading.node}</div>
-                    <Progress
-                      percent={
-                        (loading?.progress_value && loading.progress_max)
-                          ? Math.floor(loading.progress_value / loading.progress_max * 100)
-                          : 0
-                      }
-                      status="active"
-                      percentPosition={{align: 'center', type: 'outer'}}
-                      size={[NaN, 20]}
-                    />
-                  </>
-                )
-              }
+              >
+                <Loader />
+                {
+                  loading?.node && (
+                    <>
+                      <div className="text-xl w-full max-w-26 text-center">Node {loading.node}</div>
+                      <Progress
+                        percent={
+                          (loading?.progress_value && loading.progress_max)
+                            ? Math.floor(loading.progress_value / loading.progress_max * 100)
+                            : 0
+                        }
+                        status="active"
+                        percentPosition={{align: 'center', type: 'outer'}}
+                        size={[NaN, 20]}
+                      />
+                    </>
+                  )
+                }
+              </div>
             </div>
-          </div>
-        )}
-        <audio src="/ding-36029.mp3" ref={notificationAudio}></audio>
-        {resultImage && (
-          <div className="flex w-full justify-center items-center mt-20 flex-col">
-            <a href={resultUrl} target="_blank">
-              <img src={resultUrl} alt="" />
-            </a>
-            <Button type="primary" onClick={downloadImage}>
-              Download
-            </Button>
-          </div>
-        )}
-      </div>
-    </Wrapper>
+          )}
+          <audio src="/ding-36029.mp3" ref={notificationAudio}></audio>
+          {resultImage && (
+            <Result url={resultImage} className="mt-20" />
+          )}
+          {history && (
+            <div className="mt-5">
+              <History />
+            </div>
+          )}
+        </div>
+      </Wrapper>
+    </>
   );
 };
