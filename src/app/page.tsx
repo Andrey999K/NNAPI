@@ -8,7 +8,7 @@ import { onFinishFailed } from "@/utils/function";
 import { ChangeEvent, useEffect, useState } from "react";
 import { PageLoader } from "@/components/PageLoader";
 
-const { Option } = Select;
+const {Option} = Select;
 
 export default function Home() {
   const [workflows, setWorkflows] = useState([]);
@@ -27,7 +27,9 @@ export default function Home() {
         if (values.token) {
           localStorage.setItem("authToken", values.token);
         }
-        router.push(`/neural_network?wf_id=${values.wf_id}&fields=${JSON.stringify(result.template)}`);
+        localStorage.setItem("fields", JSON.stringify(result.template));
+        router.push(`/neural_network?wf_id=${values.wf_id}`);
+        // router.push(`/neural_network?wf_id=${values.wf_id}&fields=${JSON.stringify(result.template)}`);
       });
   };
 
@@ -40,9 +42,6 @@ export default function Home() {
     }
   };
 
-  console.log("!workflows", !workflows)
-  console.log("!!workflows", !!workflows)
-
   useEffect(() => {
     getWorkflowsWithoutToken()
       .then(r => setWorkflows(r.workflows))
@@ -51,7 +50,7 @@ export default function Home() {
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     if (token) {
-      form.setFieldsValue({ token, wfId: "" })
+      form.setFieldsValue({token, wfId: ""})
     }
   }, []);
 
@@ -62,7 +61,7 @@ export default function Home() {
         <Form
           name="basic"
           form={form}
-          initialValues={{ remember: true }}
+          initialValues={{remember: true}}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
@@ -70,7 +69,7 @@ export default function Home() {
         >
           <Form.Item<FieldType>
             name="token"
-            rules={[{ message: 'Please input your token!' }]}
+            rules={[{message: 'Please input your token!'}]}
             className="w-full"
           >
             <Input.Password placeholder="Token" onBlur={handleBlur} />
@@ -78,7 +77,7 @@ export default function Home() {
 
           <Form.Item
             name="wf_id"
-            rules={[{ required: true, message: 'Please input wf_id!' }]}
+            rules={[{required: true, message: 'Please input wf_id!'}]}
             className="w-full"
           >
             <Select

@@ -8,5 +8,5 @@ export type LoadingType = {
   progress_max?: number,
   progress_value?: number,
   result: null,
-  status: string
+  status: "running" | "failed" | "success"
 }
