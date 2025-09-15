@@ -40,7 +40,6 @@ export default function NeuralNetworkPage() {
   }, [loading, notificationApi]);
 
   useEffect(() => {
-    console.log(history);
     if (history.length) {
       localStorage.setItem("history", JSON.stringify(history));
     }
