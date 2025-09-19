@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, Form, FormProps, Input, Select } from "antd";
+import { Button, Form, FormProps, Input, notification, Select } from "antd";
 import { getConfiguration, getWorkflowsWithoutToken, getWorkflowsWithToken } from "@/utils/api";
 import { useRouter } from "next/navigation";
 import { FieldType } from "@/utils/types";
@@ -22,14 +22,24 @@ export default function Home() {
     setLoading(true);
     getConfiguration(values.token, values.wf_id)
       .then(result => {
-        setLoading(false);
-        console.log("result", JSON.stringify(result.template));
-        if (values.token) {
-          localStorage.setItem("authToken", values.token);
+        if (result.template) {
+          setLoading(false);
+
+          const fields = result.template.reduce((acc: Record<string, string>, key) => {
+            acc[key] = "";
+            return acc;
+          }, {});
+
+          console.log("result", JSON.stringify(fields));
+          if (values.token) {
+            localStorage.setItem("authToken", values.token);
+          }
+          localStorage.setItem("fields", JSON.stringify(fields));
+          // router.push(`/neural_network?wf_id=${values.wf_id}`);
+          router.push(`/neural_network?wf_id=${values.wf_id}&fields=${JSON.stringify(fields)}`);
+        } else {
+          notification.error({message: "Произошла непредвиденная ошибка!"});
         }
-        localStorage.setItem("fields", JSON.stringify(result.template));
-        router.push(`/neural_network?wf_id=${values.wf_id}`);
-        // router.push(`/neural_network?wf_id=${values.wf_id}&fields=${JSON.stringify(result.template)}`);
       });
   };
 

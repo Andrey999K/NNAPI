@@ -26,12 +26,15 @@ export default function NeuralNetworkPage() {
   const [loading, setLoading] = useState<undefined | LoadingType>(undefined);
   const notificationAudio = useRef<HTMLAudioElement | null>(null);
   const [history, setHistory] = useState<string[]>([]);
+  const [form] = Form.useForm();
 
   const [notificationApi, notificationContextHolder] = notification.useNotification();
 
   const blockFields = !resultImage && !!loading;
 
   const wfId = searchParams.get('wf_id');
+
+  const fields = JSON.parse(searchParams.get("fields") || "{}");
 
   useEffect(() => {
     if (loading?.status === "failed") {
@@ -49,17 +52,14 @@ export default function NeuralNetworkPage() {
     setHistory(JSON.parse(localStorage.getItem("history") || "[]"));
   }, []);
 
+  useEffect(() => {
+    form.setFieldsValue(fields);
+  }, [fields, form]);
+
   if (!wfId) return "А WF_ID где???????????";
 
-  let fields: string | string[] = localStorage.getItem("fields") || "[]";
-  try {
-    fields = JSON.parse(fields);
-  } catch (error) {
-    console.log(error);
-  }
-
-  const renderFields = (massFields: string[]) => {
-    return massFields.map((field) => {
+  const renderFields = (massFields: Record<string, string>) => {
+    return Object.keys(massFields).map((field) => {
       if (field !== "image") {
         return (
           <Form.Item
@@ -109,6 +109,7 @@ export default function NeuralNetworkPage() {
       <Wrapper>
         <div className="py-20">
           <Form
+            form={form}
             name="basic"
             initialValues={{remember: true}}
             onFinish={onFinish}
@@ -116,7 +117,7 @@ export default function NeuralNetworkPage() {
             autoComplete="off"
             className="flex flex-col gap-2 justify-center max-w-[440px] !mx-auto"
           >
-            {renderFields(fields as string[])}
+            {renderFields(fields)}
             <Form.Item label={null} className="!mb-0">
               <Button type="primary" htmlType="submit" disabled={blockFields}>
                 Submit
