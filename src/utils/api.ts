@@ -1,9 +1,9 @@
 import { fetchData } from "@/api/axios-config";
 import { Dispatch, SetStateAction } from "react";
-import { LoadingType } from "@/utils/types";
+import { LoadingType, WorkflowConfig } from "@/utils/types";
 
 
-export const getConfiguration = async (token: string, wfId: string) => {
+export const getConfiguration = async (token: string, wfId: string): Promise<WorkflowConfig> => {
   // const wf_id = "big_head";
   // const wf_id = "bg_remove";
   return await fetchData(

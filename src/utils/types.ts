@@ -10,3 +10,10 @@ export type LoadingType = {
   result: null,
   status: "running" | "failed" | "success"
 }
+
+export type WorkflowConfig = {
+  status?: "success" | string,
+  template?: string[],
+  workflow_id?: string,
+  error?: string
+}
