@@ -117,7 +117,7 @@ export default function NeuralNetworkPage() {
             audioElem.play();
           }
           setResultImage(res);
-          setHistory((prevState) => [...prevState, res]);
+          setHistory((prevState) => [res, ...prevState]);
         }
       });
   }
