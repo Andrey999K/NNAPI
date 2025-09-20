@@ -7,8 +7,8 @@ export type LoadingType = {
   node?: string,
   progress_max?: number,
   progress_value?: number,
-  result: null,
-  status: "running" | "failed" | "success"
+  result: null | string,
+  status: "running" | "failed" | "success" | "queued"
 }
 
 export type WorkflowConfig = {
@@ -16,4 +16,16 @@ export type WorkflowConfig = {
   template?: string[],
   workflow_id?: string,
   error?: string
+}
+
+export type JobInfoType = {
+  job: {
+    node?: string,
+    progress_max?: number,
+    progress_value?: number,
+    result: null | string,
+    status: "running" | "failed" | "success" | "queued",
+  },
+  job_id: string,
+  status: "running" | "failed" | "success" | "queued"
 }
