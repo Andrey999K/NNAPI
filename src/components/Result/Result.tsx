@@ -38,7 +38,7 @@ export const Result = ({url, className}: ResultProps) => {
 
   return (
     <div className={"flex gap-5 w-full justify-center items-center flex-col " + className}>
-      <div className="relative w-full h-full bg-white rounded-lg overflow-hidden">
+      <div className="relative w-full h-full bg-white rounded-lg">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
             <Loader />
@@ -54,10 +54,9 @@ export const Result = ({url, className}: ResultProps) => {
           <Image
             src={urlResult}
             alt="Result"
-            sizes="100%"
             width={400}
             height={400}
-            className="w-full h-full"
+            className="w-full h-full object-contain"
             onLoadingComplete={() => setIsLoading(false)}
             onError={() => {
               setIsLoading(false);
