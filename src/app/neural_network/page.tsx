@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { Button, Form, FormProps, notification, Progress } from "antd";
 import { UploadImage } from "@/components/UploadImage";
 import { onFinishFailed } from "@/utils/function";
+import type { FocusEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import TextArea from "antd/es/input/TextArea";
 import { getJobInfo, sendPrompt } from "@/utils/api";
@@ -21,7 +22,7 @@ type FieldType = {
 
 export default function NeuralNetworkPage() {
   const searchParams = useSearchParams();
-  const [imagePath, setImagePath] = useState("");
+  const [imagePath, setImagePath] = useState<string>("");
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [loading, setLoading] = useState<undefined | LoadingType>(undefined);
   const notificationAudio = useRef<HTMLAudioElement | null>(null);
@@ -34,7 +35,17 @@ export default function NeuralNetworkPage() {
 
   const wfId = searchParams.get('wf_id');
 
-  const fields = JSON.parse(searchParams.get("fields") || "{}");
+  const fields = JSON.parse(decodeURIComponent(searchParams.get("fields") || "{}"));
+
+  const updateURLFields = (newValue: Record<string, string>): void => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("fields", encodeURIComponent(JSON.stringify(newValue)));
+    window.history.pushState({}, '', url.toString());
+  };
+
+  const handleBlur = (event: FocusEvent<HTMLTextAreaElement>): void => {
+    updateURLFields({image: imagePath, ...form.getFieldsValue()})
+  };
 
   useEffect(() => {
     if (loading?.status === "failed") {
@@ -50,11 +61,20 @@ export default function NeuralNetworkPage() {
 
   useEffect(() => {
     setHistory(JSON.parse(localStorage.getItem("history") || "[]"));
+    if (fields?.image !== "") {
+      setImagePath(fields?.image);
+    }
   }, []);
 
   useEffect(() => {
     form.setFieldsValue(fields);
   }, [fields, form]);
+
+  useEffect(() => {
+    updateURLFields({image: imagePath, ...form.getFieldsValue(),});
+  }, [form, imagePath]);
+
+  console.log("imagePath", imagePath);
 
   if (!wfId) return "А WF_ID где???????????";
 
@@ -67,12 +87,12 @@ export default function NeuralNetworkPage() {
             key={field}
             rules={[{required: true, message: `Please input ${field}!`}]}
           >
-            <TextArea placeholder={field} rows={8} disabled={blockFields} />
+            <TextArea placeholder={field} rows={8} disabled={blockFields} name={field} onBlur={handleBlur} />
           </Form.Item>
         );
       }
       if (field === "image") {
-        return <UploadImage key={field} setImagePath={setImagePath} disabled={blockFields} />;
+        return <UploadImage key={field} imagePath={imagePath} setImagePath={setImagePath} disabled={blockFields} />;
       }
     })
   };

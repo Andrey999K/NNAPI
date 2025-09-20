@@ -1,6 +1,7 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { axiosInstance } from "@/api/axios-config";
+import { notification } from "antd";
 
 type FormData = {
   image: File | null;
@@ -8,17 +9,21 @@ type FormData = {
 }
 
 type UploadImageProps = {
+  imagePath: string;
   setImagePath: (url: string) => void;
   disabled?: boolean;
 }
 
-export const UploadImage = ({ setImagePath, disabled }: UploadImageProps) => {
+export const UploadImage = ({setImagePath, disabled, imagePath}: UploadImageProps) => {
   const [formData, setFormData] = useState<FormData>({
     image: null,
     preview: null,
   });
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [notificationApi, notificationContextHolder] = notification.useNotification();
+
+  console.log("UploadImage imagePath", imagePath);
 
   // Очистка объекта URL при размонтировании
   useEffect(() => {
@@ -37,8 +42,8 @@ export const UploadImage = ({ setImagePath, disabled }: UploadImageProps) => {
       formDataToSend.append('image', file);
 
       const token = `bearer ${process.env.NEXT_PUBLIC_TOKEN}`;
-      const headers = { Authorization: token };
-      const config = { headers };
+      const headers = {Authorization: token};
+      const config = {headers};
 
       const response = await axiosInstance.post('/set_img', formDataToSend, config);
       console.log("response", response.data.path);
@@ -54,7 +59,7 @@ export const UploadImage = ({ setImagePath, disabled }: UploadImageProps) => {
       }
     } catch (error) {
       console.error('Ошибка загрузки:', error);
-      alert('Произошла ошибка при загрузке изображения');
+      notificationApi.error({message: 'Произошла ошибка при загрузке изображения'});
     } finally {
       setIsUploading(false);
     }
@@ -87,38 +92,39 @@ export const UploadImage = ({ setImagePath, disabled }: UploadImageProps) => {
   };
 
   return (
+    <div>
+      {notificationContextHolder}
       <div>
-        <div>
-          <input
-            type="file"
-            id="image"
-            name="image"
-            ref={fileInputRef}
-            onChange={handleImageChange}
-            accept="image/*"
-            className="w-full px-3 py-2 border rounded-md"
-            disabled={isUploading || disabled}
-          />
-        </div>
-
-        {formData.preview && (
-          <div className="mb-4 relative mt-2">
-            <div className="relative min-h-[400px] max-h-[800px] w-full border rounded-md overflow-hidden">
-              <Image
-                src={formData.preview}
-                alt="Предпросмотр"
-                fill
-                style={{ objectFit: 'contain' }}
-              />
-            </div>
-
-            {isUploading && (
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <span className="text-white font-bold">Загрузка на сервер...</span>
-              </div>
-            )}
-          </div>
-        )}
+        <input
+          type="file"
+          id="image"
+          name="image"
+          ref={fileInputRef}
+          onChange={handleImageChange}
+          accept="image/*"
+          className="w-full px-3 py-2 border rounded-md"
+          disabled={isUploading || disabled}
+        />
       </div>
+
+      {(formData.preview || imagePath) && (
+        <div className="mb-4 relative mt-2">
+          <div className="relative min-h-[400px] max-h-[800px] w-full border rounded-md overflow-hidden">
+            <Image
+              src={formData.preview || `${process.env.NEXT_PUBLIC_API_URL}${imagePath}`}
+              alt="Предпросмотр"
+              fill
+              style={{objectFit: 'contain'}}
+            />
+          </div>
+
+          {isUploading && (
+            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+              <span className="text-white font-bold">Загрузка на сервер...</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
