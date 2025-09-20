@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { Button, Form, FormProps, notification, Progress } from "antd";
 import { UploadImage } from "@/components/UploadImage";
 import { onFinishFailed } from "@/utils/function";
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import TextArea from "antd/es/input/TextArea";
 import { getJobInfo, sendPrompt } from "@/utils/api";
 import { JobInfoType, LoadingType } from "@/utils/types";
@@ -67,6 +67,7 @@ export default function NeuralNetworkPage() {
       console.log("jobInfo", jobInfo);
       if (jobInfo?.job.status === "running") {
         setLoading(jobInfo.job);
+        getJob(jobInfo.job_id, setLoading);
       }
     } catch (error) {
       console.error(error);
@@ -106,6 +107,21 @@ export default function NeuralNetworkPage() {
     })
   };
 
+  const getJob = (jobId: string, setLoading: Dispatch<SetStateAction<LoadingType | undefined>>) => {
+    getJobInfo(jobId, setLoading)
+      .then((res) => {
+        if (res) {
+          const audioElem = notificationAudio.current;
+          if (audioElem) {
+            audioElem.volume = 0.2;
+            audioElem.play();
+          }
+          setResultImage(res);
+          setHistory((prevState) => [...prevState, res]);
+        }
+      });
+  }
+
   const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
     const data = {...values, image: imagePath};
     setResultImage(null);
@@ -115,18 +131,7 @@ export default function NeuralNetworkPage() {
     });
     sendPrompt(wfId, data)
       .then(result => {
-        getJobInfo(result.job_id, setLoading)
-          .then((res) => {
-            if (res) {
-              const audioElem = notificationAudio.current;
-              if (audioElem) {
-                audioElem.volume = 0.2;
-                audioElem.play();
-              }
-              setResultImage(res);
-              setHistory((prevState) => [...prevState, res]);
-            }
-          });
+        getJob(result.job_id, setLoading);
       })
       .catch(error => {
         console.log(error);
