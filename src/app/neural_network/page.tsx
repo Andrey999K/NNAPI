@@ -4,11 +4,10 @@ import { useSearchParams } from "next/navigation";
 import { Button, Form, FormProps, notification, Progress } from "antd";
 import { UploadImage } from "@/components/UploadImage";
 import { onFinishFailed } from "@/utils/function";
-import type { FocusEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import TextArea from "antd/es/input/TextArea";
 import { getJobInfo, sendPrompt } from "@/utils/api";
-import { LoadingType } from "@/utils/types";
+import { JobInfoType, LoadingType } from "@/utils/types";
 import { TimeElapsed } from "@/components/TimeElapsed";
 import { Wrapper } from "@/components/Wrapper";
 import { Loader } from "@/components/Loader";
@@ -31,7 +30,8 @@ export default function NeuralNetworkPage() {
 
   const [notificationApi, notificationContextHolder] = notification.useNotification();
 
-  const blockFields = !resultImage && !!loading;
+  const blockFields = !!loading && loading.status === "running";
+  const blockSendForm = !imagePath || (!!loading && loading.status === "running");
 
   const wfId = searchParams.get('wf_id');
 
@@ -43,7 +43,7 @@ export default function NeuralNetworkPage() {
     window.history.pushState({}, '', url.toString());
   };
 
-  const handleBlur = (event: FocusEvent<HTMLTextAreaElement>): void => {
+  const handleBlur = (): void => {
     updateURLFields({image: imagePath, ...form.getFieldsValue()})
   };
 
@@ -60,6 +60,17 @@ export default function NeuralNetworkPage() {
   }, [history]);
 
   useEffect(() => {
+    try {
+      const jobInfo: JobInfoType | null = localStorage.getItem("job_info")
+        ? JSON.parse(localStorage.getItem("job_info") || "")
+        : null;
+      console.log("jobInfo", jobInfo);
+      if (jobInfo?.job.status === "running") {
+        setLoading(jobInfo.job);
+      }
+    } catch (error) {
+      console.error(error);
+    }
     setHistory(JSON.parse(localStorage.getItem("history") || "[]"));
     if (fields?.image !== "") {
       setImagePath(fields?.image);
@@ -73,8 +84,6 @@ export default function NeuralNetworkPage() {
   useEffect(() => {
     updateURLFields({image: imagePath, ...form.getFieldsValue(),});
   }, [form, imagePath]);
-
-  console.log("imagePath", imagePath);
 
   if (!wfId) return "А WF_ID где???????????";
 
@@ -108,13 +117,15 @@ export default function NeuralNetworkPage() {
       .then(result => {
         getJobInfo(result.job_id, setLoading)
           .then((res) => {
-            const audioElem = notificationAudio.current;
-            if (audioElem) {
-              audioElem.volume = 0.2;
-              audioElem.play();
+            if (res) {
+              const audioElem = notificationAudio.current;
+              if (audioElem) {
+                audioElem.volume = 0.2;
+                audioElem.play();
+              }
+              setResultImage(res);
+              setHistory((prevState) => [...prevState, res]);
             }
-            setResultImage(res);
-            setHistory((prevState) => [...prevState, res]);
           });
       })
       .catch(error => {
@@ -139,12 +150,12 @@ export default function NeuralNetworkPage() {
           >
             {renderFields(fields)}
             <Form.Item label={null} className="!mb-0">
-              <Button type="primary" htmlType="submit" disabled={blockFields}>
+              <Button type="primary" htmlType="submit" disabled={blockSendForm}>
                 Submit
               </Button>
             </Form.Item>
           </Form>
-          {!resultImage && loading && loading.status !== "success" && (
+          {!resultImage && loading && loading.status === "running" && (
             <div className="mt-10 w-full max-w-[440px] mx-auto">
               <TimeElapsed />
               <div
@@ -174,7 +185,7 @@ export default function NeuralNetworkPage() {
           )}
           <audio src="/ding-36029.mp3" ref={notificationAudio}></audio>
           {resultImage && (
-            <Result url={resultImage} className="mt-20" />
+            <Result url={resultImage} className="mt-20 w-full max-w-[400px] max-h-[440px] !gap-2 !flex-col" />
           )}
           {history && (
             <div className="mt-5">

@@ -23,8 +23,6 @@ export const UploadImage = ({setImagePath, disabled, imagePath}: UploadImageProp
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [notificationApi, notificationContextHolder] = notification.useNotification();
 
-  console.log("UploadImage imagePath", imagePath);
-
   // Очистка объекта URL при размонтировании
   useEffect(() => {
     return () => {
