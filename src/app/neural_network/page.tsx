@@ -1,7 +1,7 @@
 "use client"
 
 import { useSearchParams } from "next/navigation";
-import { Button, Form, FormProps, notification, Progress } from "antd";
+import { Button, Form, FormProps, Modal, notification, Progress } from "antd";
 import { UploadImage } from "@/components/UploadImage";
 import { onFinishFailed } from "@/utils/function";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
@@ -27,6 +27,7 @@ export default function NeuralNetworkPage() {
   const notificationAudio = useRef<HTMLAudioElement | null>(null);
   const [history, setHistory] = useState<string[]>([]);
   const [form] = Form.useForm();
+  const [isModalContinueJob, setIsModalContinueJob] = useState(false);
 
   const [notificationApi, notificationContextHolder] = notification.useNotification();
 
@@ -60,23 +61,25 @@ export default function NeuralNetworkPage() {
   }, [history]);
 
   useEffect(() => {
-    try {
-      const jobInfo: JobInfoType | null = localStorage.getItem("job_info")
-        ? JSON.parse(localStorage.getItem("job_info") || "")
-        : null;
-      console.log("jobInfo", jobInfo);
-      if (jobInfo?.job.status === "running") {
-        setLoading(jobInfo.job);
-        getJob(jobInfo.job_id, setLoading);
+    if (!isModalContinueJob) {
+      try {
+        const jobInfo: JobInfoType | null = localStorage.getItem("job_info")
+          ? JSON.parse(localStorage.getItem("job_info") || "")
+          : null;
+        console.log("jobInfo", jobInfo);
+        if (jobInfo?.job.status === "running") {
+          setLoading(jobInfo.job);
+          getJob(jobInfo.job_id, setLoading);
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
+      setHistory(JSON.parse(localStorage.getItem("history") || "[]"));
+      if (fields?.image !== "") {
+        setImagePath(fields?.image);
+      }
     }
-    setHistory(JSON.parse(localStorage.getItem("history") || "[]"));
-    if (fields?.image !== "") {
-      setImagePath(fields?.image);
-    }
-  }, []);
+  }, [fields?.image, isModalContinueJob]);
 
   useEffect(() => {
     form.setFieldsValue(fields);
@@ -141,6 +144,15 @@ export default function NeuralNetworkPage() {
 
   return (
     <>
+      <Modal
+        title="Ожидается результат"
+        closable={false}
+        open={isModalContinueJob}
+        onOk={() => setIsModalContinueJob(false)}
+        cancelButtonProps={{hidden: true}}
+        centered={true}
+      >
+      </Modal>
       {notificationContextHolder}
       <Wrapper>
         <div className="py-20">
