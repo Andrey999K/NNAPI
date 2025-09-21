@@ -18,7 +18,6 @@ export default function Home() {
   const router = useRouter();
 
   const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
-    console.log('Success:', values);
     setLoading(true);
     getConfiguration(values.token, values.wf_id)
       .then(result => {
@@ -29,8 +28,7 @@ export default function Home() {
             acc[key] = "";
             return acc;
           }, {});
-
-          console.log("result", JSON.stringify(fields));
+          
           if (values.token) {
             localStorage.setItem("authToken", values.token);
           }

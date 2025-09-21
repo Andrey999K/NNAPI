@@ -43,7 +43,7 @@ export const UploadImage = ({setImagePath, disabled, imagePath}: UploadImageProp
       const headers = {Authorization: token};
       const config = {headers};
 
-      const response = await axiosInstance.post('/set_img', formDataToSend, config);
+      const response = await axiosInstance.post('/set_file', formDataToSend, config);
       console.log("response", response.data.path);
       setImagePath(response.data.path)
 

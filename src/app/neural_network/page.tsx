@@ -37,15 +37,17 @@ export default function NeuralNetworkPage() {
   const wfId = searchParams.get('wf_id');
 
   const fields = JSON.parse(decodeURIComponent(searchParams.get("fields") || "{}"));
+  console.log("fields", fields);
 
   const updateURLFields = (newValue: Record<string, string>): void => {
     const url = new URL(window.location.href);
+    console.log("newValue", newValue);
     url.searchParams.set("fields", encodeURIComponent(JSON.stringify(newValue)));
     window.history.pushState({}, '', url.toString());
   };
 
   const handleBlur = (): void => {
-    updateURLFields({image: imagePath, ...form.getFieldsValue()})
+    updateURLFields({image_file: imagePath, ...form.getFieldsValue()})
   };
 
   useEffect(() => {
@@ -66,7 +68,6 @@ export default function NeuralNetworkPage() {
         const jobInfo: JobInfoType | null = localStorage.getItem("job_info")
           ? JSON.parse(localStorage.getItem("job_info") || "")
           : null;
-        console.log("jobInfo", jobInfo);
         if (jobInfo?.job.status === "running") {
           setLoading(jobInfo.job);
           getJob(jobInfo.job_id, setLoading);
@@ -75,25 +76,25 @@ export default function NeuralNetworkPage() {
         console.error(error);
       }
       setHistory(JSON.parse(localStorage.getItem("history") || "[]"));
-      if (fields?.image !== "") {
-        setImagePath(fields?.image);
+      if (fields?.image_file !== "") {
+        setImagePath(fields?.image_file);
       }
     }
-  }, [fields?.image, isModalContinueJob]);
+  }, [fields?.image_file, isModalContinueJob]);
 
   useEffect(() => {
     form.setFieldsValue(fields);
   }, [fields, form]);
 
   useEffect(() => {
-    updateURLFields({image: imagePath, ...form.getFieldsValue(),});
+    updateURLFields({image_file: imagePath, ...form.getFieldsValue()});
   }, [form, imagePath]);
 
   if (!wfId) return "А WF_ID где???????????";
 
   const renderFields = (massFields: Record<string, string>) => {
     return Object.keys(massFields).map((field) => {
-      if (field !== "image") {
+      if (field !== "image_file") {
         return (
           <Form.Item
             name={field}
@@ -104,7 +105,7 @@ export default function NeuralNetworkPage() {
           </Form.Item>
         );
       }
-      if (field === "image") {
+      if (field === "image_file") {
         return <UploadImage key={field} imagePath={imagePath} setImagePath={setImagePath} disabled={blockFields} />;
       }
     })
@@ -126,7 +127,7 @@ export default function NeuralNetworkPage() {
   }
 
   const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
-    const data = {...values, image: imagePath};
+    const data = {...values, image_file: imagePath};
     setResultImage(null);
     setLoading({
       result: null,
