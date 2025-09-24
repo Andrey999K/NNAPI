@@ -19,7 +19,6 @@ type UploadImageProps = {
   field: string;
   updateFieldsFiles: Dispatch<SetStateAction<Record<string, string>>>;
   imagePath: string;
-  // setImagePath: (url: string) => void;
   disabled?: boolean;
 };
 
@@ -120,8 +119,6 @@ export const UploadImage = ({
       <div>
         <input
           type="file"
-          id="image"
-          name="image"
           ref={fileInputRef}
           onChange={handleImageChange}
           accept="image/*"

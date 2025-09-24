@@ -90,7 +90,15 @@ export const FormNeuralNetwork = ({
           />
         );
       } else if (field === "audio_file") {
-        return <UploadAudio key={field} />;
+        return (
+          <UploadAudio
+            key={field}
+            audioPath={fields[field]}
+            field={field}
+            updateFieldsFiles={setFieldsFiles}
+            disabled={blockFields}
+          />
+        );
       }
     });
   };
@@ -129,6 +137,7 @@ export const FormNeuralNetwork = ({
 
   useEffect(() => {
     form.setFieldsValue(fields);
+    console.log("fileFields", fileFields);
     setFieldsFiles(fileFields);
   }, []);
 
