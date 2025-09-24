@@ -1,23 +1,26 @@
 import { fetchData } from "@/api/axios-config";
 import { Dispatch, SetStateAction } from "react";
-import { JobInfoType, LoadingType, WorkflowConfig } from "@/utils/types";
+import {
+  JobInfoType,
+  LoadingType,
+  ResultType,
+  WorkflowConfig,
+} from "@/utils/types";
 
-
-export const getConfiguration = async (token: string, wfId: string): Promise<WorkflowConfig> => {
+export const getConfiguration = async (
+  token: string,
+  wfId: string
+): Promise<WorkflowConfig> => {
   // const wf_id = "big_head";
   // const wf_id = "bg_remove";
-  return await fetchData(
-    `/get_workflow?wf_id=${wfId}`,
-    "GET",
-    {},
-    true,
-    token
-  );
-}
+  return await fetchData(`/get_workflow?wf_id=${wfId}`, "GET", {}, true, token);
+};
 
-
-export const sendPrompt = async (wf_id: string, args: Record<string, string>) => {
-  const token = localStorage.getItem('authToken');
+export const sendPrompt = async (
+  wf_id: string,
+  args: Record<string, string>
+) => {
+  const token = localStorage.getItem("authToken");
   let fields = "";
   for (const arg in args) {
     fields += `&${arg}=${args[arg]}`;
@@ -30,14 +33,15 @@ export const sendPrompt = async (wf_id: string, args: Record<string, string>) =>
     true,
     token || ""
   );
-
 };
 
-export const getJobInfo = async (jobId: string, setLoading: Dispatch<SetStateAction<LoadingType | undefined>>): Promise<string | null> => {
-  const token = localStorage.getItem('authToken');
+export const getJobInfo = async (
+  jobId: string,
+  setLoading: Dispatch<SetStateAction<LoadingType | undefined>>
+): Promise<ResultType> => {
+  const token = localStorage.getItem("authToken");
 
-  const checkJobStatus = async (): Promise<string | null> => {
-
+  const checkJobStatus = async (): Promise<ResultType> => {
     try {
       const response: JobInfoType = await fetchData(
         `/job_info?job_id=${jobId}`,
@@ -61,7 +65,7 @@ export const getJobInfo = async (jobId: string, setLoading: Dispatch<SetStateAct
       console.error("Job status check failed:", error);
     }
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       setTimeout(() => resolve(checkJobStatus()), 1000);
     });
   };
@@ -69,24 +73,10 @@ export const getJobInfo = async (jobId: string, setLoading: Dispatch<SetStateAct
   return await checkJobStatus();
 };
 
-
 export const getWorkflowsWithoutToken = async () => {
-  return await fetchData(
-    `/get_workflows`,
-    "GET",
-    {},
-    true,
-    ""
-  );
+  return await fetchData(`/get_workflows`, "GET", {}, true, "");
 };
 
-
 export const getWorkflowsWithToken = async (token: string) => {
-  return await fetchData(
-    `/get_workflows`,
-    "GET",
-    {},
-    true,
-    token
-  );
+  return await fetchData(`/get_workflows`, "GET", {}, true, token);
 };
