@@ -6,7 +6,6 @@ import {
   useRef,
   useState,
 } from "react";
-import Image from "next/image";
 import { axiosInstance } from "@/api/axios-config";
 import { notification } from "antd";
 
@@ -15,19 +14,20 @@ type FormData = {
   preview: string | null;
 };
 
-type UploadImageProps = {
+type UploadAudioProps = {
   field: string;
   updateFieldsFiles: Dispatch<SetStateAction<Record<string, string>>>;
-  imagePath: string;
+  audioPath: string;
   disabled?: boolean;
 };
 
-export const UploadImage = ({
+export const UploadAudio = ({
   field,
   updateFieldsFiles,
-  imagePath,
+  audioPath,
   disabled,
-}: UploadImageProps) => {
+}: UploadAudioProps) => {
+  console.log("UploadAudio audioPath", audioPath);
   const [formData, setFormData] = useState<FormData>({
     image: null,
     preview: null,
@@ -51,7 +51,7 @@ export const UploadImage = ({
 
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append("image", file);
+      formDataToSend.append(field, file);
 
       const token = `bearer ${process.env.NEXT_PUBLIC_TOKEN}`;
       const headers = { Authorization: token };
@@ -87,7 +87,7 @@ export const UploadImage = ({
     }
   };
 
-  const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+  const handleAudioChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
 
     const file = e.target.files[0];
@@ -120,26 +120,22 @@ export const UploadImage = ({
         <input
           type="file"
           ref={fileInputRef}
-          onChange={handleImageChange}
-          accept="image/*"
+          onChange={handleAudioChange}
+          accept="audio/*"
           className="w-full px-3 py-2 border rounded-md"
           disabled={isUploading || disabled}
         />
       </div>
 
-      {(formData.preview || imagePath) && (
+      {(formData.preview || audioPath) && (
         <div className="mb-4 relative mt-2">
           <div className="relative min-h-[400px] max-h-[800px] w-full border rounded-md overflow-hidden">
-            <Image
+            <audio
+              controls={true}
               src={
                 formData.preview ||
-                `${process.env.NEXT_PUBLIC_API_URL}${imagePath}`
+                `${process.env.NEXT_PUBLIC_API_URL}${audioPath}`
               }
-              alt="Предпросмотр"
-              fill
-              style={{ objectFit: "contain" }}
-              sizes="100%"
-              priority
             />
           </div>
 

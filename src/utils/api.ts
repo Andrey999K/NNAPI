@@ -1,23 +1,26 @@
 import { fetchData } from "@/api/axios-config";
 import { Dispatch, SetStateAction } from "react";
-import { LoadingType } from "@/utils/types";
+import {
+  JobInfoType,
+  LoadingType,
+  ResultType,
+  WorkflowConfig,
+} from "@/utils/types";
 
-
-export const getConfiguration = async (token: string, wfId: string) => {
+export const getConfiguration = async (
+  token: string,
+  wfId: string
+): Promise<WorkflowConfig> => {
   // const wf_id = "big_head";
   // const wf_id = "bg_remove";
-  return await fetchData(
-    `/get_workflow?wf_id=${wfId}`,
-    "GET",
-    {},
-    true,
-    token
-  );
-}
+  return await fetchData(`/get_workflow?wf_id=${wfId}`, "GET", {}, true, token);
+};
 
-
-export const sendPrompt = async (wf_id: string, args: Record<string, string>) => {
-  const token = localStorage.getItem('authToken');
+export const sendPrompt = async (
+  wf_id: string,
+  args: Record<string, string>
+) => {
+  const token = localStorage.getItem("authToken");
   let fields = "";
   for (const arg in args) {
     fields += `&${arg}=${args[arg]}`;
@@ -30,19 +33,17 @@ export const sendPrompt = async (wf_id: string, args: Record<string, string>) =>
     true,
     token || ""
   );
-
 };
 
-// Тут тоже изменить тип промиса т.к. там вроде вернётся не строка
-export const getJobInfo = async (jobId: string, setLoading: Dispatch<SetStateAction<LoadingType | undefined>>): Promise<string> => {
-  const token = localStorage.getItem('authToken');
-  // if (!token) return;
+export const getJobInfo = async (
+  jobId: string,
+  setLoading: Dispatch<SetStateAction<LoadingType | undefined>>
+): Promise<ResultType> => {
+  const token = localStorage.getItem("authToken");
 
-  // Изменить тип промиса т.к. там вроде вернётся не строка
-  const checkJobStatus = async (): Promise<string> => {
-
+  const checkJobStatus = async (): Promise<ResultType> => {
     try {
-      const response = await fetchData(
+      const response: JobInfoType = await fetchData(
         `/job_info?job_id=${jobId}`,
         "GET",
         {},
@@ -50,64 +51,32 @@ export const getJobInfo = async (jobId: string, setLoading: Dispatch<SetStateAct
         token || ""
       );
 
+      localStorage.setItem("job_info", JSON.stringify(response));
+
       setLoading(response.job);
 
-      if (response.job.status === "success") {
-        return response.job.result; // Завершаем при успехе
+      if (response.job.status === "success" && response.job.result) {
+        return response.job.result;
+      }
+      if (response.job.status === "failed") {
+        return response.job.result;
       }
     } catch (error) {
       console.error("Job status check failed:", error);
     }
 
-    // Рекурсивно вызываем себя через промис
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       setTimeout(() => resolve(checkJobStatus()), 1000);
     });
   };
 
-  // Запускаем процесс
   return await checkJobStatus();
 };
 
-
 export const getWorkflowsWithoutToken = async () => {
-  return await fetchData(
-    `/get_workflows`,
-    "GET",
-    {},
-    true,
-    ""
-  );
+  return await fetchData(`/get_workflows`, "GET", {}, true, "");
 };
-
 
 export const getWorkflowsWithToken = async (token: string) => {
-  return await fetchData(
-    `/get_workflows`,
-    "GET",
-    {},
-    true,
-    token
-  );
+  return await fetchData(`/get_workflows`, "GET", {}, true, token);
 };
-
-
-// export const getConfiguration = async (token: string): Promise<ConfigurationData> => {
-//   // const wf_id = "big_head";
-//   const wf_id = "bg_remove";
-//   const response = await customFetch(
-//     `/get_workflow?wf_id=${wf_id}`,
-//     "GET",
-//     {},
-//     true,
-//     token || `bearer ${process.env.NEXT_PUBLIC_TOKEN}`
-//   ); // Добавлен await
-//   console.log("response", response);
-//
-//   // Гарантируем, что возвращаемое значение не undefined
-//   if (response === undefined) {
-//     throw new Error("Received undefined from API");
-//   }
-//
-//   return response;
-// };
